@@ -1,111 +1,135 @@
 #!/usr/bin/env bash
-
-# Usage
-#  get_codes.sh [--test] [--newline]
-#     --test: Run the script in test mode.
-#     --newline: Print a newline after the output.
-#  To keep the script simple, the arguments are expected to be in these exact positions.
+set -o errexit
 
 ROW_REGEX='^\[?\{"ROWID"\:([[:digit:]]+),"sender"\:"([^"]+)","service"\:"([^"]+)","message_date"\:"([^"]+)","text"\:"([[:print:]][^\\]+)"\}.*$'
-
 NUMBER_MATCH_REGEX='([G[:digit:]-]{3,})'
 
-output=''
-lookBackMinutes=${lookBackMinutes:-15}
+OUTPUT=""
+LOOK_BACK_MINUTES=${LOOK_BACK_MINUTES:-15}
+RERUN_INTERVAL=${RERUN_INTERVAL:-"0.5"}
+DEBUG=false
+TESTING=false
 
-if [[ "$1" == "--test" ]]; then
-	echo "Running in test mode."
-	response=`cat test_messages.txt`
+while true; do
+  case "$1" in
+    --debug)
+      DEBUG=true
+      set -o xtrace
+      ;;
+    --test)
+      TESTING=true
+      ;;
+    --look-back-minutes)
+      shift
+      LOOK_BACK_MINUTES="$1"
+      ;;
+    --help)
+      echo "Usage"
+      echo "get_codes.sh [--help] [--test] [--look-back-minutes]"
+      echo "    --help: show this message."
+      echo "    --test: Run the script in test mode."
+      echo "    --look-back-minutes: How many minutes until old messages are not shown. (default 15 minutes)"
+      exit 0
+      ;;
+    -*)
+      echo "ERROR: unknown option '$1'"
+      $0 --help
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+if [ "$TESTING" = true ]; then
+    RESPONSE=$(cat test_messages.txt)
 else
-	# >&2 echo "Lookback minutes: $lookBackMinutes"
-
-	sqlQuery="select
+	SQL_QUERY=$(cat <<-EOF
+	SELECT
 		message.rowid,
 		ifnull(handle.uncanonicalized_id, chat.chat_identifier) AS sender,
 		message.service,
-		datetime(message.date / 1000000000 + 978307200, 'unixepoch', 'localtime') AS message_date,
+		datetime(message.date / 1000000000 + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime') AS message_date,
 		message.text
-	from
+	FROM
 		message
-			left join chat_message_join on chat_message_join.message_id = message.ROWID
-			left join chat on chat.ROWID = chat_message_join.chat_id
-			left join handle on message.handle_id = handle.ROWID
-	where
-		message.is_from_me = 0
-		and message.text is not null
-		and length(message.text) > 0
-		and (
-			message.text glob '*[0-9][0-9][0-9]*'
-			or message.text glob '*[0-9][0-9][0-9][0-9]*'
-			or message.text glob '*[0-9][0-9][0-9][0-9][0-9]*'
-			or message.text glob '*[0-9][0-9][0-9][0-9][0-9][0-9]*'
-			or message.text glob '*[0-9][0-9][0-9]-[0-9][0-9][0-9]*'
-			or message.text glob '*[0-9][0-9][0-9][0-9][0-9][0-9][0-9]*'
-			or message.text glob '*[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*'
+			LEFT JOIN chat_message_join ON chat_message_join.message_id = message.ROWID
+			LEFT JOIN chat ON chat.ROWID = chat_message_join.chat_id
+			LEFT JOIN handle ON message.handle_id = handle.ROWID
+	WHERE
+		service_name = "SMS"
+		AND message.is_from_me = 0
+		AND message.text IS NOT NULL
+		AND length(message.text) > 0
+		AND (
+			message.text GLOB '*[0-9][0-9][0-9]*'
+			OR message.text GLOB '*[0-9][0-9][0-9][0-9]*'
+			OR message.text GLOB '*[0-9][0-9][0-9][0-9][0-9]*'
+			OR message.text GLOB '*[0-9][0-9][0-9][0-9][0-9][0-9]*'
+			OR message.text GLOB '*[0-9][0-9][0-9]-[0-9][0-9][0-9]*'
+			OR message.text GLOB '*[0-9][0-9][0-9][0-9][0-9][0-9][0-9]*'
+			OR message.text GLOB '*[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*'
 		)
-		-- and datetime(message.date / 1000000000 + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime')
-		--         >= datetime('now', '-$lookBackMinutes minutes', 'localtime')
-	order by
-		message.date desc
-	limit 10;"
-	# >&2 echo "SQL Query: $sqlQuery"
-
-	response=$(sqlite3 ~/Library/Messages/chat.db -json "$sqlQuery")
-	# >&2 echo "SQL Results: '$response'"
+		AND datetime(message.date / 1000000000 + strftime('%s', '2001-01-01'), 'unixepoch', 'localtime')
+			>= datetime('now', '-$LOOK_BACK_MINUTES minutes', 'localtime')
+	ORDER BY
+		message.date DESC
+	LIMIT 10;
+	EOF
+	)
+	RESPONSE=$(sqlite3 ~/Library/Messages/chat.db -json "$SQL_QUERY")
 fi
 
-
-if [[ -z "$response" ]]; then
-	output+="{\"items\":[{\"type\":\"default\", \"icon\": {\"path\": \"icon.png\"}, \"arg\": \"\", \"subtitle\": \"Searched messages in the last $lookBackMinutes minutes.\", \"title\": \"No codes found\"}]}"
+if [[ -z "$RESPONSE" ]]; then
+    OUTPUT+=$(
+    printf '{
+            "rerun": "%s",
+            "items": [{
+                "type": "default",
+                "icon": { "path": "icon.png", },
+                "arg": "",
+                "subtitle": "Searched messages in the last %s minutes.",
+                "title": "No codes found",
+            }]
+        }' \
+        "$LOOK_BACK_MINUTES" \
+        "$RERUN_INTERVAL" \
+    )
 else
-	while read line; do
-		#>&2 echo "Line: $line"
-		if [[ $line =~ $ROW_REGEX ]]; then
-		 	sender=${BASH_REMATCH[2]}
-			message_date=${BASH_REMATCH[4]}
-			message=${BASH_REMATCH[5]}
-			#>&2 echo " Found sender: $sender"
-			#>&2 echo " Found message_date: $message_date"
-			#>&2 echo " Found message: $message"
+    OUTPUT+=$(printf '{"rerun": "%s", "items":[' $RERUN_INTERVAL)
+    while read line; do
+        if [[ $line =~ $ROW_REGEX ]]; then
+            sender=${BASH_REMATCH[2]}
+            message_date=${BASH_REMATCH[4]}
+            message=${BASH_REMATCH[5]}
+            remaining_message=$message
+            message_quoted=${message/$'\n'}
+            message_quoted=${message_quoted//[\"]/\\\"}
 
-			remaining_message=$message
-			message_quoted=${message//[\"]/\\\"}
-
-			while [[ $remaining_message =~ $NUMBER_MATCH_REGEX ]]; do
-				# >&2 echo " -- Message: $message"
-				# >&2 echo " -- Found-1 ${BASH_REMATCH[1]}"
-				code=${BASH_REMATCH[1]}
-
-				if [[ -z "$output" ]]; then
-					output='{"items":['
-				else
-					output+=','
-					if [[ "$2" == "--newline" ]]; then
-						output+="\n"
-					fi
-				fi
-				# >&2 echo "Original $message"
-				# >&2 echo "Quoted $message_quoted"
-				# >&2 echo
-				item="{\"type\":\"default\", \"icon\": {\"path\": \"icon.png\"}, \"arg\": \"$code\", \"subtitle\": \"${message_date}: ${message_quoted}\", \"title\": \"$code\"}"
-				# >&2 echo $item
-				output+=$item
-				# >&2 echo "New output: $output"
-
-				# Trim to the remaining message
-				# >&2 echo "REMATCH: ${BASH_REMATCH[0]}"
-				# >&2 echo "Before truncating message: $remaining_message"
-				remaining_message=${remaining_message##*${BASH_REMATCH[0]}}
-				# >&2 echo "Remaining message: $remaining_message"
-			done
-		else
-			>&2 echo "No match for $line"
-		fi
-
-		continue
-	done <<< "$response"
-	output+=']}'
+            while [[ $remaining_message =~ $NUMBER_MATCH_REGEX ]]; do
+                code=${BASH_REMATCH[1]}
+                OUTPUT+=$( \
+                    printf '{
+                        "type": "default",
+                        "icon": { "path": "icon.png", },
+                        "subtitle": "From %s at %s [%s]",
+                        "title": "%s",
+                        "arg": "%s",
+                    },' \
+                    "$sender" \
+                    "$message_date" \
+                    "$message_quoted" \
+                    "$code" \
+                    "$code" \
+                )
+                # Trim to the remaining message
+                remaining_message=${remaining_message##*${BASH_REMATCH[0]}}
+            done
+        fi
+    done <<< "$RESPONSE"
+    OUTPUT+='],}'
 fi
 
-# >&2 echo "Final Output: '$output'"
-echo -e $output
+echo -e $OUTPUT
