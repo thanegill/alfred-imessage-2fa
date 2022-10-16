@@ -1,1 +1,0 @@
-* Reduced the update check frequency to 5 days from everytime.
