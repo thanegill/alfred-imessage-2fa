@@ -2,14 +2,14 @@
 
 # Tests the get_codes.sh script.
 
-response=`./get_codes.sh --test --newline`
+response=$( ./get_codes.sh --test --debug)
 # echo $response
 
 # Convert the response to an array.
 IFS=$'\n'
 received_responses=($response)
 
-valid_results=`cat test_messages_results.txt`
+valid_results=$(cat test_messages_results.txt)
 valid_responses=($valid_results)
 
 valid_response_index=0
@@ -26,7 +26,7 @@ while [[ $valid_response_index -lt ${#valid_responses[@]} ]]; do
 
     if [[ $received_response =~ $ARG_REGEX ]]; then
         received_code=${BASH_REMATCH[1]}
-        
+
         if [[ $valid_response != $received_code ]]; then
             escaped=${received_response//</&lt;}
             escaped=${escaped//&/&amp;}
@@ -53,7 +53,7 @@ while [[ $valid_response_index -lt ${#valid_responses[@]} ]]; do
         printf "$valid_response_index: \xE2\x9D\x8C $message\n"
         let "errors+=1"
     fi
-    
+
     valid_response_index=$((valid_response_index + 1))
     received_response_index=$((received_response_index + 1))
 done
@@ -64,7 +64,7 @@ else
     printf "\033[0;31m$failures failures, $errors errors.\n"
 fi
 
-iso8601date=`date -u +%Y-%m-%dT%H:%M:%S`
+iso8601date=$(date -u +%Y-%m-%dT%H:%M:%S)
 printf "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <testsuite name=\"get_codes.sh\" hostname=\"$HOSTNAME\" time=\"0\" timestamp=\"$iso8601date\"
     tests=\"${#valid_responses[@]}\" errors=\"$errors\" failures=\"$failures\" skipped=\"0\">\n$test_results
