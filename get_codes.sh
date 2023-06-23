@@ -89,13 +89,13 @@ if [[ -z "$RESPONSE" ]]; then
             "items": [{
                 "type": "default",
                 "icon": { "path": "icon.png", },
-                "arg": "",
                 "subtitle": "Searched messages in the last %s minutes.",
                 "title": "No codes found",
+                "arg": "",
             }]
         }' \
-        "$LOOK_BACK_MINUTES" \
         "$RERUN_INTERVAL" \
+        "$LOOK_BACK_MINUTES" \
     )
 else
     OUTPUT+=$(printf '{"rerun": "%s", "items":[' $RERUN_INTERVAL)
