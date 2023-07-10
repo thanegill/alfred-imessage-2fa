@@ -2,7 +2,7 @@
 set -o errexit
 
 ROW_REGEX='^\[?\{"ROWID"\:([[:digit:]]+),"sender"\:"([^"]+)","service"\:"([^"]+)","message_date"\:"([^"]+)","text"\:"([[:print:]][^\\]+)"\}.*$'
-NUMBER_MATCH_REGEX='([[:digit:]-]{3,})'
+NUMBER_MATCH_REGEX='([[:digit:]]{3,})'
 
 OUTPUT=""
 LOOK_BACK_MINUTES=${LOOK_BACK_MINUTES:-15}
