@@ -98,8 +98,8 @@ if [[ -z "$RESPONSE" ]]; then
         "$LOOK_BACK_MINUTES" \
     )
 else
-    OUTPUT+=$(printf '{"rerun": "%s", "items":[' $RERUN_INTERVAL)
-    while read line; do
+    OUTPUT+=$(printf '{"rerun": "%s", "items":[' "$RERUN_INTERVAL")
+    while read -r line; do
         if [[ $line =~ $ROW_REGEX ]]; then
             sender=${BASH_REMATCH[2]}
             message_date=${BASH_REMATCH[4]}
@@ -132,4 +132,4 @@ else
     OUTPUT+='],}'
 fi
 
-echo -e $OUTPUT
+echo -e "$OUTPUT"
