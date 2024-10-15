@@ -3,11 +3,24 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>com.thebitguru.alfred-2fa</string>
+	<string>com.thanegill.alfred-2fa</string>
 	<key>category</key>
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
+		<key>9F00D9AA-661F-482B-BEDD-54E97F217776</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B2134B58-A76E-45E9-854A-503A1C378C34</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>A4D95526-D6F8-4128-801F-C202F57B42F5</key>
 		<array>
 			<dict>
@@ -66,7 +79,7 @@
 		</array>
 	</dict>
 	<key>createdby</key>
-	<string>Farhan Ahmad</string>
+	<string>Farhan Ahmad - thanegill fork</string>
 	<key>description</key>
 	<string>Find two-factor authentication codes in your recent iMessage messages</string>
 	<key>disabled</key>
@@ -75,6 +88,23 @@
 	<string>2FA Code from Messages</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
+				<key>keyword</key>
+				<string>2fa</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.snippet</string>
+			<key>uid</key>
+			<string>9F00D9AA-661F-482B-BEDD-54E97F217776</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -131,7 +161,7 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>keyword</key>
-				<string>m2fa</string>
+				<string>2fa</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -143,7 +173,7 @@
 				<key>runningsubtext</key>
 				<string>Looking up two factor authentication codes...</string>
 				<key>script</key>
-				<string>./get_codes.sh </string>
+				<string>./get_codes.sh $@</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -153,7 +183,7 @@
 				<key>title</key>
 				<string>Two Factor Authentication Codes</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>8</integer>
 				<key>withspace</key>
 				<false/>
 			</dict>
@@ -230,53 +260,60 @@
 	<string>Icon made by www.flaticon.com/authors/freepik from www.flaticon.com.</string>
 	<key>uidata</key>
 	<dict>
+		<key>9F00D9AA-661F-482B-BEDD-54E97F217776</key>
+		<dict>
+			<key>xpos</key>
+			<real>200</real>
+			<key>ypos</key>
+			<real>135</real>
+		</dict>
 		<key>A4D95526-D6F8-4128-801F-C202F57B42F5</key>
 		<dict>
 			<key>note</key>
 			<string>Method 1: AppleScript paste to simulate keystrokes</string>
 			<key>xpos</key>
-			<real>445</real>
+			<real>560</real>
 			<key>ypos</key>
-			<real>420</real>
+			<real>565</real>
 		</dict>
 		<key>B2134B58-A76E-45E9-854A-503A1C378C34</key>
 		<dict>
 			<key>xpos</key>
-			<real>75</real>
+			<real>190</real>
 			<key>ypos</key>
-			<real>200</real>
+			<real>345</real>
 		</dict>
 		<key>CEBD08AD-93B2-4317-939A-49E805C90AA1</key>
 		<dict>
 			<key>xpos</key>
-			<real>445</real>
+			<real>560</real>
 			<key>ypos</key>
-			<real>15</real>
+			<real>160</real>
 		</dict>
 		<key>E7F29D45-025C-4CE3-922F-C2F5A4BAF634</key>
 		<dict>
 			<key>xpos</key>
-			<real>600</real>
+			<real>715</real>
 			<key>ypos</key>
-			<real>420</real>
+			<real>565</real>
 		</dict>
 		<key>E819A847-A36C-4867-AACD-CFFCFB59B5A9</key>
 		<dict>
 			<key>note</key>
 			<string>Method 2: Alfred paste</string>
 			<key>xpos</key>
-			<real>445</real>
+			<real>560</real>
 			<key>ypos</key>
-			<real>275</real>
+			<real>420</real>
 		</dict>
 		<key>F4475CE4-E166-4292-A90B-EDFB0CA51D3D</key>
 		<dict>
 			<key>note</key>
 			<string>Only copy to clipboard</string>
 			<key>xpos</key>
-			<real>445</real>
+			<real>560</real>
 			<key>ypos</key>
-			<real>135</real>
+			<real>280</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
@@ -311,6 +348,6 @@
 	<key>version</key>
 	<string>0.5</string>
 	<key>webaddress</key>
-	<string>https://github.com/thebitguru/alfred-imessage-2fa-copy</string>
+	<string>https://github.com/thanegill/alfred-imessage-2fa-copy</string>
 </dict>
 </plist>
