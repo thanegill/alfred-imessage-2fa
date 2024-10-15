@@ -15,6 +15,7 @@ while true; do
   case "$1" in
     --debug)
       DEBUG=true
+      LOOK_BACK_MINUTES=480
       set -o xtrace
       ;;
     --test)
@@ -84,8 +85,7 @@ else
 fi
 
 if [[ -z "$RESPONSE" ]]; then
-    OUTPUT+=$(
-    printf '{
+    OUTPUT+=$(printf '{
             "rerun": "%s",
             "items": [{
                 "type": "default",
@@ -99,7 +99,12 @@ if [[ -z "$RESPONSE" ]]; then
         "$LOOK_BACK_MINUTES" \
     )
 else
-    OUTPUT+=$(printf '{"rerun": "%s", "items":[' "$RERUN_INTERVAL")
+    OUTPUT+=$(printf '{
+        "rerun": "%s",
+        "items": [' \
+        "$RERUN_INTERVAL" \
+    )
+
     while read -r line; do
         if [[ $line =~ $ROW_REGEX ]]; then
             sender=${BASH_REMATCH[2]}
@@ -113,14 +118,14 @@ else
 
             while [[ $remaining_message =~ $NUMBER_MATCH_REGEX ]]; do
                 code=${BASH_REMATCH[1]}
-                OUTPUT+=$( \
-                    printf '{
-                        "type": "default",
-                        "icon": { "path": "icon.png", },
-                        "subtitle": "From %s at %s [%s]",
-                        "title": "%s",
-                        "arg": "%s",
-                    },' \
+                OUTPUT+=$(printf '
+                {
+                    "type": "default",
+                    "icon": { "path": "icon.png", },
+                    "subtitle": "From %s at %s [%s]",
+                    "title": "%s",
+                    "arg": "%s",
+                },' \
                     "$sender" \
                     "$message_date" \
                     "$message_quoted" \
@@ -132,7 +137,9 @@ else
             done
         fi
     done <<< "$RESPONSE"
-    OUTPUT+='],}'
+
+    OUTPUT+=$(printf '\n        ],\n}'
+    )
 fi
 
 echo -e "$OUTPUT"
