@@ -3,7 +3,7 @@ set -o errexit
 
 ROW_REGEX='^\[?\{"ROWID"\:([[:digit:]]+),"sender"\:"([^"]+)","service"\:"([^"]+)","message_date"\:"([^"]+)","text"\:"((\\.|[^"\\])*)"\}.*$'
 NUMBER_MATCH_REGEX='([[:digit:]]{3,}(-[[:digit:]]{3,})*)'
-PHONE_MATCH_REGEX='(\+?[[:digit:]]{1,2}[\s.-])?\(?[[:digit:]]{3}\)?[\s.-][[:digit:]]{3}[\s.-][[:digit:]]{4}'
+PHONE_MATCH_REGEX='(\+?[[:digit:]]{1,3}[[:space:].-]+)?\(?[[:digit:]]{3}\)?[[:space:].-]+[[:digit:]]{3}[[:space:].-]+[[:digit:]]{4}([^[:digit:]]|$)'
 
 OUTPUT=""
 LOOK_BACK_MINUTES=${LOOK_BACK_MINUTES:-15}
@@ -111,8 +111,10 @@ else
             message_date=${BASH_REMATCH[4]}
             message=${BASH_REMATCH[5]}
             remaining_message=$message
-            # Remove phone numbers from message
-            [[ $remaining_message =~ $PHONE_MATCH_REGEX ]] && remaining_message=${remaining_message//${BASH_REMATCH[0]}}
+            # Remove phone numbers from message (loop to strip every number, not just the first)
+            while [[ $remaining_message =~ $PHONE_MATCH_REGEX ]]; do
+                remaining_message=${remaining_message//${BASH_REMATCH[0]}}
+            done
             message_quoted=${message/$'\n'}
             message_quoted=${message_quoted//[\"]/\\\"}
 
