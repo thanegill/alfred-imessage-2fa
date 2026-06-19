@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -o errexit
 
-ROW_REGEX='^\[?\{"ROWID"\:([[:digit:]]+),"sender"\:"([^"]+)","service"\:"([^"]+)","message_date"\:"([^"]+)","text"\:"([[:print:]][^\\]+)"\}.*$'
-NUMBER_MATCH_REGEX='([[:digit:]]{3,})'
+ROW_REGEX='^\[?\{"ROWID"\:([[:digit:]]+),"sender"\:"([^"]+)","service"\:"([^"]+)","message_date"\:"([^"]+)","text"\:"((\\.|[^"\\])*)"\}.*$'
+NUMBER_MATCH_REGEX='([[:digit:]]{3,}(-[[:digit:]]{3,})*)'
 PHONE_MATCH_REGEX='(\+?[[:digit:]]{1,2}[\s.-])?\(?[[:digit:]]{3}\)?[\s.-][[:digit:]]{3}[\s.-][[:digit:]]{4}'
 
 OUTPUT=""
