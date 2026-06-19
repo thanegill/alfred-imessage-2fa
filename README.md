@@ -50,10 +50,8 @@ It prints the candidates as an [Alfred Script Filter](https://www.alfredapp.com/
 
 ## Release process
 
-1. Update the version in [`info.plist`](info.plist).
-2. Write the release notes in `release_notes.md`.
-3. Commit to `master`.
-4. Tag the commit `vX.XX`. The tag triggers the [build workflow](.github/workflows/build.yml), which packages the `.alfredworkflow` file and publishes a GitHub release.
+1. Commit any changes to `master`.
+2. Tag the commit `vX.XX` and push the tag. The tag triggers the [release workflow](.github/workflows/release.yml), which stamps the version from the tag (`v0.6` → `0.6`), packages the `.alfredworkflow`, and publishes a GitHub release with auto-generated notes.
 
 ## License
 

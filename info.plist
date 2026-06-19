@@ -345,8 +345,6 @@
 		<key>LOOK_BACK_MINUTES</key>
 		<string>15</string>
 	</dict>
-	<key>version</key>
-	<string>0.5</string>
 	<key>webaddress</key>
 	<string>https://github.com/thanegill/alfred-imessage-2fa-copy</string>
 </dict>
