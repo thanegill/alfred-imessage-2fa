@@ -4,6 +4,10 @@ An [Alfred](https://www.alfredapp.com/) workflow that finds two-factor authentic
 
 [![Run tests](https://github.com/thanegill/alfred-imessage-2fa/actions/workflows/test.yml/badge.svg)](https://github.com/thanegill/alfred-imessage-2fa/actions/workflows/test.yml)
 
+![Alfred listing recent verification codes, each showing the sender and the message it came from; pressing Enter pastes the highlighted code](screenshot.png)
+
+*Recent codes in Alfred — type `2fa`, then pick one to paste it.*
+
 This is a `bash` reimplementation of a partial copy of [squatto/alfred-imessage-2fa](https://github.com/squatto/alfred-imessage-2fa) (which is written in PHP). All the work happens in [`get_codes.sh`](get_codes.sh); the rest of the workflow is wiring in [`info.plist`](info.plist).
 
 ## Requirements
